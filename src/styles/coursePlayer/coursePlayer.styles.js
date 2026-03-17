@@ -1,11 +1,7 @@
-import { StyleSheet, Dimensions } from 'react-native';
-
-const { width } = Dimensions.get('window');
+import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: { flex: 1, backgroundColor: '#13172e' },
-
-  // ── Header ──────────────────────────────────────────────────────────────────
   header: {
     backgroundColor: '#1a1f3c',
     paddingTop: 52,
@@ -31,7 +27,6 @@ export default StyleSheet.create({
     marginTop: 2,
   },
 
-  // ── Loading / Error ──────────────────────────────────────────────────────────
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText: { color: '#9099b2', fontSize: 14 },
   errorText: {
@@ -49,7 +44,6 @@ export default StyleSheet.create({
   },
   retryBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 
-  // ── Progress bar ─────────────────────────────────────────────────────────────
   progressBarWrap: {
     backgroundColor: '#1a1f3c',
     paddingHorizontal: 20,
@@ -76,10 +70,8 @@ export default StyleSheet.create({
     borderRadius: 2,
   },
 
-  // ── Slide area ───────────────────────────────────────────────────────────────
   scrollContent: { padding: 20, paddingBottom: 40 },
 
-  // ── Slide image ───────────────────────────────────────────────────────────────
   slideImageWrapper: {
     width: '100%',
     aspectRatio: 4 / 3,
@@ -95,7 +87,6 @@ export default StyleSheet.create({
     height: '100%',
   },
 
-  // ── Slide number badge ────────────────────────────────────────────────────────
   slideNumberBadge: {
     alignSelf: 'flex-start',
     backgroundColor: '#242a4e',
@@ -115,7 +106,6 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: '#242a4e',
     padding: 10,
-    // marginBottom: 24,
   },
   transcriptLabel: {
     color: '#4f6ef7',
@@ -123,15 +113,15 @@ export default StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 1,
     textTransform: 'uppercase',
-    // marginBottom: 10,
   },
   transcriptText: {
     color: '#d8ddf5',
     fontSize: 16,
     lineHeight: 26,
+    includeFontPadding: false,
+    textAlignVertical: 'top',
   },
 
-  // ── Controls ─────────────────────────────────────────────────────────────────
   controls: {
     backgroundColor: '#1a1f3c',
     borderTopWidth: 1,
@@ -166,7 +156,6 @@ export default StyleSheet.create({
     elevation: 8,
   },
 
-  // ── Time indicator ────────────────────────────────────────────────────────────
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -176,7 +165,6 @@ export default StyleSheet.create({
   },
   timeText: { color: '#5a6080', fontSize: 11 },
 
-  // ── Complete state ────────────────────────────────────────────────────────────
   completeCard: {
     backgroundColor: '#1b3d2e',
     borderRadius: 14,
@@ -199,7 +187,6 @@ export default StyleSheet.create({
     lineHeight: 22,
   },
 
-  // ── Take Test CTA button ──────────────────────────────────────────────────────
   takeTestBtn: {
     backgroundColor: '#4f6ef7',
     paddingHorizontal: 28,
@@ -219,31 +206,6 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
 
-  // ── Test screen ───────────────────────────────────────────────────────────────
-  testHeader: {
-    backgroundColor: '#1a1f3c',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#242a4e',
-  },
-  testHeaderTitle: {
-    color: '#4f6ef7',
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  testHeaderName: {
-    color: '#d8ddf5',
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 22,
-  },
-
-  // ── Question cards ────────────────────────────────────────────────────────────
   questionCard: {
     backgroundColor: '#1a1f3c',
     borderRadius: 12,
@@ -268,7 +230,6 @@ export default StyleSheet.create({
     marginBottom: 14,
   },
 
-  // ── Option chips ──────────────────────────────────────────────────────────────
   optionChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -294,9 +255,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  optionDotSelected: {
-    borderColor: '#4f6ef7',
-  },
+  optionDotSelected: { borderColor: '#4f6ef7' },
   optionDotInner: {
     width: 8,
     height: 8,
@@ -314,33 +273,6 @@ export default StyleSheet.create({
     fontWeight: '600',
   },
 
-  // ── Submit button ─────────────────────────────────────────────────────────────
-  submitBtn: {
-    backgroundColor: '#4f6ef7',
-    marginHorizontal: 20,
-    marginBottom: 36,
-    marginTop: 4,
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    shadowColor: '#4f6ef7',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  submitBtnDisabled: {
-    backgroundColor: '#242a4e',
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  submitBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-
-  // ── Result card ───────────────────────────────────────────────────────────────
   resultCard: {
     borderRadius: 14,
     borderWidth: 1,
@@ -382,7 +314,6 @@ export default StyleSheet.create({
     fontSize: 14,
   },
 
-  // ── Question dot-progress row ─────────────────────────────────────────────────
   questionDotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -406,11 +337,8 @@ export default StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#4f6ef7',
   },
-  questionDotAnswered: {
-    backgroundColor: '#2ecc71',
-  },
+  questionDotAnswered: { backgroundColor: '#2ecc71' },
 
-  // ── Question navigation bar ───────────────────────────────────────────────────
   questionNavBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -432,9 +360,7 @@ export default StyleSheet.create({
     backgroundColor: '#242a4e',
     gap: 6,
   },
-  questionNavBtnDisabled: {
-    opacity: 0.35,
-  },
+  questionNavBtnDisabled: { opacity: 0.35 },
   questionNavBtnText: {
     color: '#d8ddf5',
     fontSize: 14,

@@ -137,3 +137,85 @@ export const getSlideImageUrl = (courseNumber, slideNumber) => {
   console.log(slideNumber);
   return `https://admin.mariposatraining.com/Content/Presentations/Slides/${courseNumber}/Slides/Slide${padded}.JPG`;
 };
+
+/**
+ * PATCH /Community/Lecture/{lectureSoid}/CompleteViewing
+ * Marks the lecture as fully viewed. No payload required.
+ */
+export const completeViewing = async (lectureSoid) => {
+  await axios.patch(`${BASE_URL}/Community/Lecture/${lectureSoid}/CompleteViewing`);
+};
+
+/**
+ * GET /Community/Lecture/{lectureSoid}/GetTest
+ * Returns the post-lecture test with Questions and Options.
+ */
+export const getLectureTest = async (lectureSoid) => {
+  const response = await axios.get(`${BASE_URL}/Community/Lecture/${lectureSoid}/GetTest`);
+  return response.data;
+};
+
+/**
+ * POST /Community/Lecture/{lectureSoid}/AnswerQuestions
+ * Submits the user's answers for all questions.
+ * answers = [{ LectureSoid, TestSoid, QuestionSoid, OptionSoid }, ...]
+ */
+export const answerQuestions = async (lectureSoid, answers) => {
+  await axios.post(
+    `${BASE_URL}/Community/Lecture/${lectureSoid}/AnswerQuestions`,
+    answers
+  );
+};
+
+/**
+ * PATCH /Community/Lecture/{lectureSoid}/GradeTest
+ * Grades the submitted test. Returns true (passed) or false (failed).
+ */
+export const gradeTest = async (lectureSoid) => {
+  const response = await axios.patch(
+    `${BASE_URL}/Community/Lecture/${lectureSoid}/GradeTest`
+  );
+  return response.data; // true or false
+};
+
+/**
+ * POST /Community/Lecture/{lectureSoid}
+ * Sets a field on the lecture, used to record DiplomaSignedOn.
+ * payload: { FieldName: "DiplomaSignedOn", Data: <ISO date string> }
+ */
+export const signDiploma = async (lectureSoid, dateIsoString) => {
+  await axios.post(`${BASE_URL}/Community/Lecture/${lectureSoid}`, {
+    FieldName: 'DiplomaSignedOn',
+    Data: dateIsoString,
+  });
+};
+
+/**
+ * GET /Community/Lecture/{lectureSoid}/GetDiplomaStream/
+ * Downloads the diploma PDF, saves to the device cache, and opens the
+ * system share sheet so the user can save / open it.
+ */
+export const downloadDiplomaStream = async (lectureSoid) => {
+  // expo-file-system/legacy keeps the downloadAsync/cacheDirectory API (full API moved to new File/Directory classes in SDK 54)
+  const FileSystem = await import('expo-file-system/legacy').then((m) => m.default ?? m);
+  const Sharing = await import('expo-sharing').then((m) => m.default ?? m);
+
+  const url = `${BASE_URL}/Community/Lecture/${lectureSoid}/GetDiplomaStream/`;
+  const fileUri = `${FileSystem.cacheDirectory}diploma_${lectureSoid}.pdf`;
+
+  const downloadResult = await FileSystem.downloadAsync(url, fileUri);
+  if (downloadResult.status !== 200) {
+    throw new Error(`Diploma download failed with status ${downloadResult.status}`);
+  }
+
+  const canShare = await Sharing.isAvailableAsync();
+  if (canShare) {
+    await Sharing.shareAsync(fileUri, {
+      mimeType: 'application/pdf',
+      dialogTitle: 'Save or open your diploma',
+      UTI: 'com.adobe.pdf',
+    });
+  } else {
+    throw new Error('Sharing is not available on this device.');
+  }
+};

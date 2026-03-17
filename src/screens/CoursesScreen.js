@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, FlatList, ActivityIndicator, StatusBar, RefreshControl, Alert } from 'react-native';
+import DiplomaModal from '../components/coursePlayer/DiplomaModal';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { getCatalog, getLecturesOrdered, getCourseThumbnail } from '../services/courseService';
 import CoursesHeader from '../components/courses/CoursesHeader';
@@ -19,6 +20,7 @@ export default function CoursesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [selectedCourseName, setSelectedCourseName] = useState('');
+  const [diplomaLectureSoid, setDiplomaLectureSoid] = useState(null);
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -54,6 +56,13 @@ export default function CoursesScreen() {
 
   useEffect(() => { fetchCourses(); }, [fetchCourses]);
 
+  // Re-fetch every time this screen comes into focus (e.g., returning from CoursePlayer)
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourses();
+    }, [fetchCourses])
+  );
+
   const onRefresh = () => { setRefreshing(true); fetchCourses(); };
 
   const filteredCourses = courses.filter(
@@ -65,8 +74,19 @@ export default function CoursesScreen() {
   const handleWatch = (course) => {
     navigation.navigate('CoursePlayer', { course, lectures, memberSoid: user.Soid });
   };
-  const handleTest = (course) => Alert.alert('Take Test', course.Name);
-  const handlePrint = (course) => Alert.alert('Print Certificate', course.Name);
+  // Test button: navigate into CoursePlayer with openTest=true so it goes straight to the test
+  const handleTest = (course) => {
+    navigation.navigate('CoursePlayer', { course, lectures, memberSoid: user.Soid, openTest: true });
+  };
+  const handleDiploma = (course) => {
+    const lectureSoid = course.lecture?.Soid;
+    if (!lectureSoid) {
+      Alert.alert('Not Available', 'No lecture record found for this course. Please watch the course first.');
+      return;
+    }
+    setDiplomaLectureSoid(lectureSoid);
+  };
+  const handlePrint = handleDiploma; // kept for backward compat
 
   const renderCourseCard = ({ item }) => (
     <CourseCard
@@ -75,7 +95,8 @@ export default function CoursesScreen() {
       onNamePress={setSelectedCourseName}
       onWatch={handleWatch}
       onTest={handleTest}
-      onPrint={handlePrint}
+      onDiploma={handleDiploma}
+      onPrint={handleDiploma}
     />
   );
 
@@ -129,6 +150,12 @@ export default function CoursesScreen() {
       )}
 
       <CourseNameModal name={selectedCourseName} onClose={() => setSelectedCourseName('')} />
+
+      <DiplomaModal
+        visible={!!diplomaLectureSoid}
+        lectureSoid={diplomaLectureSoid}
+        onClose={() => setDiplomaLectureSoid(null)}
+      />
     </View>
   );
 }

@@ -11,7 +11,7 @@ const formatDuration = (minutes) => {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 };
 
-export default function CourseCard({ item, thumbnailUrl, onNamePress, onWatch, onTest, onPrint }) {
+export default function CourseCard({ item, thumbnailUrl, onNamePress, onWatch, onTest, onDiploma, onPrint }) {
   const lec = item.lecture;
   const viewed = lec?.Viewed === true;
   const status = lec?.Status;
@@ -51,11 +51,11 @@ export default function CourseCard({ item, thumbnailUrl, onNamePress, onWatch, o
           {watchBtn}
           <TouchableOpacity
             style={[styles.actionBtn, styles.printBtn]}
-            onPress={() => onPrint(item)}
+            onPress={() => (onDiploma ?? onPrint)?.(item)}
             activeOpacity={0.8}
           >
-            <Ionicons name="print-outline" size={14} color="#fff" />
-            <Text style={styles.actionBtnText}>Print</Text>
+            <Ionicons name="school-outline" size={14} color="#fff" />
+            <Text style={styles.actionBtnText}>Diploma</Text>
           </TouchableOpacity>
         </View>
       );
