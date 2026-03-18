@@ -9,7 +9,7 @@ function getResumeSlide(instances) {
   return Math.max(0, (best.LatestSlide ?? 1) - 1);
 }
 
-export function useCourseLoader({ course, lectures, memberSoid }) {
+export function useCourseLoader({ course, lectures, memberSoid, skipCourseContent = false }) {
   const lectureSoidRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -33,6 +33,11 @@ export function useCourseLoader({ course, lectures, memberSoid }) {
         }
         if (!lsoid) throw new Error('Could not find or create a lecture for this course.');
         lectureSoidRef.current = lsoid;
+
+        if (skipCourseContent) {
+          if (!cancelled) setLoading(false);
+          return;
+        }
 
         await createInstance(lsoid);
         const lectureInfo = await getLectureInfo(lsoid);

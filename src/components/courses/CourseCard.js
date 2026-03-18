@@ -112,12 +112,6 @@ export default function CourseCard({ item, thumbnailUrl, onNamePress, onWatch, o
               <Text style={styles.pillText}>{item.CeuCount} CEU</Text>
             </View>
           ) : null}
-          {item.Price != null ? (
-            <View style={styles.pill}>
-              <Ionicons name="pricetag-outline" size={11} color="#9099b2" />
-              <Text style={styles.pillText}>${item.Price}</Text>
-            </View>
-          ) : null}
         </View>
 
         {renderButtons()}

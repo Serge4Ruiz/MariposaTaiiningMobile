@@ -134,7 +134,6 @@ export const getCourseAudioUrl = (channel) => `${AUDIO_BASE}/${channel}.mp3`;
  */
 export const getSlideImageUrl = (courseNumber, slideNumber) => {
   const padded = String(slideNumber + 1).padStart(3, '0');
-  console.log(slideNumber);
   return `https://admin.mariposatraining.com/Content/Presentations/Slides/${courseNumber}/Slides/Slide${padded}.JPG`;
 };
 

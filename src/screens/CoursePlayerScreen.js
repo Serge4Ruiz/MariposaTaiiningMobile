@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -28,30 +28,37 @@ export default function CoursePlayerScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [diplomaModalVisible, setDiplomaModalVisible] = useState(false);
   const currentSlideRef = useRef(0);
-  const { loading, error, slides, courseNumber, startSlide, audioUrl, lectureSoidRef } = useCourseLoader({ course, lectures, memberSoid });
+  const testRequestedRef = useRef(false);
+  const { loading, error, slides, courseNumber, startSlide, audioUrl, lectureSoidRef } = useCourseLoader({
+    course,
+    lectures,
+    memberSoid,
+    skipCourseContent: openTest,
+  });
   const slidesRef = useRef([]);
-  const { soundRef, loadAudio, playSlide, handlePlayPause, handlePrev, handleNext } = useAudioPlayer({ slidesRef, currentSlideRef, lectureSoidRef, setCurrentSlide, setIsPlaying, setIsComplete });
+  const { loadAudio, playSlide, handlePlayPause, handlePrev, handleNext, stopAndRelease } = useAudioPlayer({ slidesRef, currentSlideRef, lectureSoidRef, setCurrentSlide, setIsPlaying, setIsComplete });
   const { testPhase, testData, selectedAnswers, testPassed, currentQuestionIndex, setTestPhase, setCurrentQuestionIndex, handleTakeTest, handleSelectOption, handleSubmitTest, handleRetakeTest } =
-  useTestManager(openTest ? 'loading' : 'none');
-  
+    useTestManager(openTest ? 'loading' : 'none');
+
   useEffect(() => { slidesRef.current = slides; }, [slides]);
 
   useEffect(() => { currentSlideRef.current = currentSlide; }, [currentSlide]);
-  
+
+  const handleExitCourse = useCallback(async () => {
+    await stopAndRelease();
+    navigation.goBack();
+  }, [navigation, stopAndRelease]);
+
   useEffect(() => {
-    if (loading || !audioUrl) return;
+    if (loading || !audioUrl || openTest) return;
     let cancelled = false;
     const bootstrap = async () => {
       try {
         await loadAudio(audioUrl);
-        if (cancelled) { soundRef.current?.unloadAsync?.(); return; }
+        if (cancelled) { await stopAndRelease(); return; }
         setCurrentSlide(startSlide);
         currentSlideRef.current = startSlide;
-        if (openTest) {
-          await handleTakeTest(lectureSoidRef);
-        } else {
-          await playSlide(startSlide);
-        }
+        await playSlide(startSlide);
       } catch (e) {
         console.error('Audio bootstrap error:', e);
       }
@@ -59,10 +66,22 @@ export default function CoursePlayerScreen() {
     bootstrap();
     return () => {
       cancelled = true;
-      soundRef.current?.unloadAsync?.();
+      stopAndRelease();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, audioUrl]);
+  }, [loading, audioUrl, openTest]);
+
+  useEffect(() => {
+    if (!openTest || loading || testRequestedRef.current || testPhase !== 'loading') return;
+    testRequestedRef.current = true;
+    handleTakeTest(lectureSoidRef);
+  }, [openTest, loading, testPhase, handleTakeTest, lectureSoidRef]);
+
+  useEffect(() => {
+    if (testPhase !== 'none') {
+      stopAndRelease();
+    }
+  }, [testPhase, stopAndRelease]);
 
   const isTestAlreadyPassed = lectures.some(
     (l) => l.Soid === lectureSoidRef.current && l.Status === 'Completed'
@@ -74,7 +93,7 @@ export default function CoursePlayerScreen() {
   const openDiplomaModal = () => setDiplomaModalVisible(true);
 
   if (testPhase === 'loading') {
-    return <TestLoadingScreen courseName={course.Name} onBack={() => navigation.goBack()} />;
+    return <TestLoadingScreen courseName={course.Name} onBack={handleExitCourse} />;
   }
 
   if (testPhase === 'taking' || testPhase === 'submitting') {
@@ -85,7 +104,7 @@ export default function CoursePlayerScreen() {
         currentQuestionIndex={currentQuestionIndex}
         selectedAnswers={selectedAnswers}
         isSubmitting={testPhase === 'submitting'}
-        onBack={() => openTest ? navigation.goBack() : setTestPhase('none')}
+        onBack={() => openTest ? handleExitCourse() : setTestPhase('none')}
         onSelectOption={handleSelectOption}
         onPrev={() => setCurrentQuestionIndex((i) => Math.max(0, i - 1))}
         onNext={() => setCurrentQuestionIndex((i) => Math.min((testData?.Questions?.length ?? 1) - 1, i + 1))}
@@ -101,7 +120,7 @@ export default function CoursePlayerScreen() {
           courseName={course.Name}
           passed={testPassed === true}
           onRetake={handleRetakeTest}
-          onBack={() => navigation.goBack()}
+          onBack={handleExitCourse}
           onGetDiploma={openDiplomaModal}
         />
         <DiplomaModal
@@ -115,7 +134,7 @@ export default function CoursePlayerScreen() {
 
   return (
     <View style={styles.container}>
-      <PlayerHeader onBack={() => navigation.goBack()} courseName={course.Name} subtitle={headerSubtitle} />
+      <PlayerHeader onBack={handleExitCourse} courseName={course.Name} subtitle={headerSubtitle} />
 
       {loading ? (
         <View style={styles.centered}>
@@ -126,7 +145,7 @@ export default function CoursePlayerScreen() {
         <View style={styles.centered}>
           <Ionicons name="alert-circle-outline" size={48} color="#e05c7a" />
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity style={styles.retryBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.retryBtn} onPress={handleExitCourse}>
             <Text style={styles.retryBtnText}>Go Back</Text>
           </TouchableOpacity>
         </View>

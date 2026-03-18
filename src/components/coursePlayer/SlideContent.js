@@ -16,6 +16,14 @@ export default function SlideContent({ slide, slideIndex, courseNumber }) {
 
   const startSec = slide.StartTime ?? slide.StartTimeSecD;
   const durationSec = slide.Duration ?? slide.DurationSecD;
+  const transcriptText = (slide.Transcript || '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
 
   return (
     <>
@@ -43,16 +51,7 @@ export default function SlideContent({ slide, slideIndex, courseNumber }) {
       <View style={styles.transcriptCard}>
         {/* <Text style={styles.transcriptLabel}>Transcript</Text> */}
         <Text style={styles.transcriptText}>
-          {slide.Transcript
-            ? slide.Transcript
-                .replace(/<[^>]+>/g, '')   // strip HTML tags
-                .replace(/&nbsp;/g, ' ')   // decode common HTML entities
-                .replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/\n{2,}/g, '\n')  // collapse multiple blank lines
-                .trim()                    // remove leading/trailing whitespace
-            : '—'}
+          {transcriptText || 'No content available'}
         </Text>
       </View>
 
