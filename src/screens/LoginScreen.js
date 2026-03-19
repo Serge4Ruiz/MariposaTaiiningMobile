@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, StatusBar } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  Platform,
+  ScrollView,
+  StatusBar,
+  Keyboard,
+} from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import BrandArea from '../components/login/BrandArea';
 import LoginForm from '../components/login/LoginForm';
@@ -12,6 +19,47 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const scrollViewRef = useRef(null);
+  const focusedOffsetRef = useRef(0);
+
+  useEffect(() => {
+    // 'Will' events on iOS are smoother; Android only fires 'Did' events
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      const kbHeight = e.endCoordinates.height;
+      setKeyboardHeight(kbHeight);
+      // Wait a tick for paddingBottom to apply, then scroll to focused field
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          y: focusedOffsetRef.current,
+          animated: true,
+        });
+      }, 100);
+    });
+
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Called by LoginForm when a field is focused — store its Y position
+  const handleFocusOffset = (yOffset) => {
+    focusedOffsetRef.current = yOffset;
+    // If keyboard is already visible (switching between fields), scroll now
+    if (keyboardHeight > 0) {
+      scrollViewRef.current?.scrollTo({ y: yOffset, animated: true });
+    }
+  };
 
   const handleLogin = async () => {
     if (!email.trim()) { setError('Please enter your email address.'); return; }
@@ -34,15 +82,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1f3c" />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        ref={scrollViewRef}
+        contentContainerStyle={[
+          styles.scrollContent,
+          // Expand bottom padding by keyboard height so all content stays scrollable
+          { paddingBottom: styles.scrollContent.paddingVertical + keyboardHeight },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
       >
         <BrandArea />
         <LoginForm
@@ -55,11 +106,12 @@ export default function LoginScreen() {
           isLoading={isLoading}
           error={error}
           onSubmit={handleLogin}
+          onFocusField={handleFocusOffset}
         />
         <Text style={styles.footer}>
           © {new Date().getFullYear()} Mariposa Training. All rights reserved.
         </Text>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

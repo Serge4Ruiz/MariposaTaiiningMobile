@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,11 @@ export default function LoginForm({
   isLoading,
   error,
   onSubmit,
+  onFocusField,
 }) {
+  const emailGroupY = useRef(0);
+  const passwordGroupY = useRef(0);
+
   return (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>Welcome Back</Text>
@@ -33,7 +37,10 @@ export default function LoginForm({
         </View>
       ) : null}
 
-      <View style={styles.inputGroup}>
+      <View
+        style={styles.inputGroup}
+        onLayout={(e) => { emailGroupY.current = e.nativeEvent.layout.y; }}
+      >
         <Text style={styles.label}>Email Address</Text>
         <View style={styles.inputWrapper}>
           <Ionicons name="mail-outline" size={18} color="#9099b2" style={styles.inputIcon} />
@@ -47,11 +54,15 @@ export default function LoginForm({
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="next"
+            onFocus={() => onFocusField?.(emailGroupY.current)}
           />
         </View>
       </View>
 
-      <View style={styles.inputGroup}>
+      <View
+        style={styles.inputGroup}
+        onLayout={(e) => { passwordGroupY.current = e.nativeEvent.layout.y; }}
+      >
         <Text style={styles.label}>Password</Text>
         <View style={styles.inputWrapper}>
           <Ionicons name="lock-closed-outline" size={18} color="#9099b2" style={styles.inputIcon} />
@@ -64,6 +75,7 @@ export default function LoginForm({
             secureTextEntry={!showPassword}
             returnKeyType="done"
             onSubmitEditing={onSubmit}
+            onFocus={() => onFocusField?.(passwordGroupY.current)}
           />
           <TouchableOpacity onPress={onTogglePassword} style={styles.eyeButton}>
             <Ionicons

@@ -7,7 +7,7 @@
     "icon": "./assets/mt-1.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/mt-1.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,11 +16,10 @@
     },
     "android": {
       "package": "com.mariposa.mobile",
+      "icon": "./assets/mt-1.png",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/mt-1.png"
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
@@ -28,7 +27,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/splash-icon.png"
+      "favicon": "./assets/mt-1.png"
     },
     "plugins": [
       "expo-audio",

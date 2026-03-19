@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   TouchableWithoutFeedback,
   View,
+  Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getLectureInfo, signDiploma, downloadDiplomaStream } from '../../services/courseService';
@@ -24,6 +24,35 @@ export default function DiplomaModal({ visible, lectureSoid, onClose }) {
   const [typedName, setTypedName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const inputRef = useRef(null);
+
+  // Animated value to lift the sheet above the keyboard
+  const sheetLift = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      Animated.timing(sheetLift, {
+        toValue: e.endCoordinates.height,
+        duration: Platform.OS === 'ios' ? e.duration ?? 250 : 200,
+        useNativeDriver: false,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener(hideEvent, (e) => {
+      Animated.timing(sheetLift, {
+        toValue: 0,
+        duration: Platform.OS === 'ios' ? e.duration ?? 250 : 200,
+        useNativeDriver: false,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [sheetLift]);
 
   // Reset and fetch when modal opens
   useEffect(() => {
@@ -55,6 +84,7 @@ export default function DiplomaModal({ visible, lectureSoid, onClose }) {
   const namesMatch = typedName.trim().toLowerCase() === memberName.trim().toLowerCase();
 
   const handleClose = () => {
+    Keyboard.dismiss();
     setPhase('idle');
     setTypedName('');
     setErrorMsg('');
@@ -124,13 +154,6 @@ export default function DiplomaModal({ visible, lectureSoid, onClose }) {
 
   const sheetPaddingStyle = { paddingBottom: 48 + insets.bottom };
 
-  const sheetContent = (
-    <View style={[styles.sheet, sheetPaddingStyle]}>
-      <View style={styles.handle} />
-      {renderContent()}
-    </View>
-  );
-
   return (
     <Modal
       visible={visible}
@@ -139,19 +162,18 @@ export default function DiplomaModal({ visible, lectureSoid, onClose }) {
       statusBarTranslucent
       onRequestClose={handleClose}
     >
-      {/* Full-screen dark backdrop */}
+      {/* Full-screen dark backdrop — tap to dismiss keyboard */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.overlay} />
       </TouchableWithoutFeedback>
 
-      {/* Sheet anchored to bottom */}
-      {Platform.OS === 'ios' ? (
-        <KeyboardAvoidingView behavior="padding" style={styles.kvWrapper}>
-          {sheetContent}
-        </KeyboardAvoidingView>
-      ) : (
-        <View style={styles.kvWrapper}>{sheetContent}</View>
-      )}
+      {/* Sheet lifts above keyboard via animated bottom offset */}
+      <Animated.View style={[styles.kvWrapper, { bottom: sheetLift }]}>
+        <View style={[styles.sheet, sheetPaddingStyle]}>
+          <View style={styles.handle} />
+          {renderContent()}
+        </View>
+      </Animated.View>
     </Modal>
   );
 }

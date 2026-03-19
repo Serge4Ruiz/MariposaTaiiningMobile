@@ -17,6 +17,10 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginBottom: 36,
   },
+  logoImage: {
+    width: 280,
+    height: 140,
+  },
   logoCircle: {
     width: 72,
     height: 72,
