@@ -74,6 +74,20 @@ export function useAudioPlayer({ slidesRef, currentSlideRef, lectureSoidRef, set
   const onPlaybackStatus = useCallback((status) => {
     if (!status.isLoaded) return;
     syncIsPlaying(status.playing);
+
+    // Audio track finished naturally — immediately complete
+    if (status.didJustFinish) {
+      const lsoid = lectureSoidRef.current;
+      syncIsPlaying(false);
+      if (lsoid) {
+        completeViewing(lsoid).catch((e) =>
+          console.warn('completeViewing error (non-fatal):', e)
+        );
+      }
+      setIsComplete(true);
+      return;
+    }
+
     if (!status.playing || !isPlayingRef.current) return;
 
     const slide = slidesRef.current[currentSlideRef.current];
@@ -89,7 +103,7 @@ export function useAudioPlayer({ slidesRef, currentSlideRef, lectureSoidRef, set
       } catch (_) { }
       advanceSlide();
     }
-  }, [slidesRef, currentSlideRef, syncIsPlaying, advanceSlide]);
+  }, [slidesRef, currentSlideRef, lectureSoidRef, syncIsPlaying, setIsComplete, advanceSlide]);
 
   const stopAndRelease = useCallback(async () => {
     syncIsPlaying(false);

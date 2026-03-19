@@ -72,10 +72,10 @@ export default function CoursePlayerScreen() {
   }, [loading, audioUrl, openTest]);
 
   useEffect(() => {
-    if (!openTest || loading || testRequestedRef.current || testPhase !== 'loading') return;
+    if (!openTest || loading || testRequestedRef.current) return;
     testRequestedRef.current = true;
     handleTakeTest(lectureSoidRef);
-  }, [openTest, loading, testPhase, handleTakeTest, lectureSoidRef]);
+  }, [openTest, loading, handleTakeTest, lectureSoidRef]);
 
   useEffect(() => {
     if (testPhase !== 'none') {
